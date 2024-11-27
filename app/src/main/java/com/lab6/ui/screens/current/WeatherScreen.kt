@@ -44,27 +44,24 @@ fun WeatherScreen(
     val weatherForecastResponseState = viewModel.weatherForecastResponseStateFlow.collectAsState()
     val selectedTitle = viewModel.selectedTitle.collectAsState()
 
-    // State to hold the selected date for filtering
     val selectedDate = remember { mutableStateOf<Date?>(null) }
 
-    // State to control when to show the date picker dialog
     val showDatePickerDialogState = remember { mutableStateOf(false) }
 
-    // State for filtering forecast based on selected date
+
     val filteredForecast = remember(selectedDate.value) {
         weatherForecastResponseState.value?.list?.filter {
             val forecastDate = Date(it.dt * 1000)
             selectedDate.value?.let { selected ->
-                // Compare only the date part (ignoring time)
                 SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(forecastDate) == SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selected)
             } ?: true
         }
     }
 
-    // Show DatePickerDialog using a side-effect when required
+
     if (showDatePickerDialogState.value) {
         showDatePickerDialog(selectedDate)
-        showDatePickerDialogState.value = false // Reset the state after showing
+        showDatePickerDialogState.value = false 
     }
 
     Column(
