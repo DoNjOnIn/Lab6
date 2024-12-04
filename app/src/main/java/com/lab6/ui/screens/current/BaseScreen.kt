@@ -1,150 +1,103 @@
 package com.lab6.ui.screens.current
 
-import android.annotation.SuppressLint
-import android.app.DatePickerDialog
-import android.os.Build
-import android.widget.DatePicker
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lab6.ui.components.WeatherMainCustomView
 import org.koin.androidx.compose.getViewModel
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 
-@SuppressLint("RememberReturnType")
 @Composable
-fun WeatherScreen(
-    id: Int,
-    viewModel: WeatherScreenViewModel = getViewModel()
+fun BaseScreen(
+    viewModel: BaseScreenViewModel = getViewModel(),
+    onCalendar: () -> Unit,
+    onSolarEclipse: () -> Unit
 ) {
-    remember(id) {
-        viewModel.fetchWeatherById(id)
+    val moonPhase by viewModel.moonPhase.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchMoonPhase()
     }
 
-    val weatherResponseState = viewModel.weatherResponseStateFlow.collectAsState()
-    val weatherForecastResponseState = viewModel.weatherForecastResponseStateFlow.collectAsState()
-    val selectedTitle = viewModel.selectedTitle.collectAsState()
-
-    // State to hold the selected date for filtering
-    val selectedDate = remember { mutableStateOf<Date?>(null) }
-
-    // State to control when to show the date picker dialog
-    val showDatePickerDialogState = remember { mutableStateOf(false) }
-
-    // State for filtering forecast based on selected date
-    val filteredForecast = remember(selectedDate.value) {
-        weatherForecastResponseState.value?.list?.filter {
-            val forecastDate = Date(it.dt * 1000)
-            selectedDate.value?.let { selected ->
-                // Compare only the date part (ignoring time)
-                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(forecastDate) == SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selected)
-            } ?: true
-        }
-    }
-
-    // Show DatePickerDialog using a side-effect when required
-    if (showDatePickerDialogState.value) {
-        showDatePickerDialog(selectedDate)
-        showDatePickerDialogState.value = false // Reset the state after showing
-    }
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(Color.DarkGray)
     ) {
-        Text(
-            text = selectedTitle.value.toString(),
-            fontSize = 22.sp,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Text(
-            text = weatherResponseState.value?.let {
-                "Coordinates: lat=${it.coord.lat}, lon=${it.coord.lon}"
-            } ?: "Fetching coordinates...",
-            fontSize = 16.sp,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        )
+                .align(Alignment.Center)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            moonPhase?.let {
+                Text(
+                    text = "Date: ${it.datestamp}",
+                    color = Color.White
+                )
+                Text(
+                    text = "Moon Phase: ${it.moon.phaseName}",
+                    color = Color.White
+                )
+                Text(
+                    text = "Age: ${it.moon.ageDays} Days",
+                    color = Color.White
+                )
 
-        weatherResponseState.value?.main?.let { weatherMain ->
-            WeatherMainCustomView(weatherMain = weatherMain)
+
+                Box(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                ) {
+                    Text(
+                        text = "${it.moon.emoji}",
+                        fontSize = 100.sp,
+                        color = Color.White
+                    )
+                }
+            } ?: Text(
+                text = "Loading Moon Phase...",
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         Button(
-            onClick = {
-                showDatePickerDialogState.value = true
-            },
-            modifier = Modifier.padding(top = 16.dp)
+            onClick = onCalendar,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
         ) {
-            Text(text = "Select Date to Filter")
+            Text(text = "Calendar")
         }
-
-        selectedDate.value?.let {
-            Text(
-                text = "Selected Date: ${SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(it)}",
-                fontSize = 16.sp,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-
-        filteredForecast?.let { forecastList ->
-            LazyColumn {
-                items(forecastList) { weatherForecast ->
-                    weatherForecast.main.let { weatherMain ->
-                        Text(
-                            "Time: ${
-                                SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(weatherForecast.dt * 1000))
-                            }",
-                            fontSize = 18.sp,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        WeatherMainCustomView(weatherMain = weatherMain)
-                    }
-                }
-            }
+        Button(
+            onClick = onSolarEclipse,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+        ) {
+            Text(text = "Eclipse info")
         }
     }
 }
-
-@Composable
-fun showDatePickerDialog(selectedDate: MutableState<Date?>) {
-    val calendar = Calendar.getInstance()
-    val datePickerDialog = DatePickerDialog(
-        LocalContext.current,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val selectedCal = Calendar.getInstance()
-            selectedCal.set(year, month, dayOfMonth)
-            selectedDate.value = selectedCal.time
-        },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
-    )
-    datePickerDialog.show()
-}
-
-
-
 

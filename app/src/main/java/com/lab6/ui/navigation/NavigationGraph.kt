@@ -3,54 +3,49 @@ package com.lab6.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.lab6.ui.screens.current.WeatherScreen
-import com.lab6.ui.screens.current.WeatherScreenViewModel
-import com.lab6.ui.screens.manu.MenuScreen
+import com.lab6.ui.screens.SolarEclipse.SolarEclipseScreen
+import com.lab6.ui.screens.calendar.CalendarScreen
+import com.lab6.ui.screens.current.BaseScreen
+import com.lab6.ui.screens.current.BaseScreenViewModel
 import org.koin.androidx.compose.getViewModel
 
 
-const val SCREEN_MENU_SCREEN = "menuScreen"
-const val SCREEN_WEATHER_SCREEN = "weatherScreen"
-
+const val SCREEN_BASE_SCREEN = "baseScreen"
+const val SCREEN_CALENDAR_SCREEN = "calendarScreen"
+const val SCREEN_SOLAR_ECLIPSE_SCREEN = "solarEclipseScreen"
 
 @Composable
 fun NavigationGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    viewModel: WeatherScreenViewModel = getViewModel() // Use ViewModel to fetch items
+    viewModel: BaseScreenViewModel = getViewModel()
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = SCREEN_MENU_SCREEN
+        startDestination = SCREEN_BASE_SCREEN
     ) {
-        // Menu Screen
         composable(
-            route = SCREEN_MENU_SCREEN
+            route = SCREEN_BASE_SCREEN
         ) {
-            MenuScreen(
-                items = viewModel.getItemsList(),
-                onWeather = { id -> navController.navigate("$SCREEN_WEATHER_SCREEN/$id") }
+            BaseScreen(
+                onCalendar = { navController.navigate(SCREEN_CALENDAR_SCREEN) },
+                onSolarEclipse = { navController.navigate(SCREEN_SOLAR_ECLIPSE_SCREEN) }
             )
         }
-
-        // Weather Screen
         composable(
-            route = "$SCREEN_WEATHER_SCREEN/{id}",
-            arguments = listOf(
-                navArgument("id") {
-                    type = NavType.IntType
-                    nullable = false
-                },
-            )
-        ) { backStackEntry ->
-            val cityId = backStackEntry.arguments?.getInt("id") ?: -1
-            WeatherScreen(id = cityId)
+            route = SCREEN_CALENDAR_SCREEN
+        ) {
+            CalendarScreen()
+        }
+        composable(
+            route = SCREEN_SOLAR_ECLIPSE_SCREEN
+        ) {
+            SolarEclipseScreen()
         }
     }
 }
+
