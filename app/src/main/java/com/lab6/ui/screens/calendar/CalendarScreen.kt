@@ -38,18 +38,16 @@ fun CalendarScreen(
     val moonPhaseResponse by viewModel.moonPhase.collectAsState()
 
     LaunchedEffect(Unit) {
-        // Fetch the moon phase data when the screen is loaded
         viewModel.fetchMoonPhase()
     }
 
     moonPhaseResponse?.let { moonPhaseData ->
-        // List of months for the calendar
         val months = listOf(
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         )
 
-        // Manually reference moon phase lists from the MoonPhases object
+
         val moonPhasesMap = mapOf(
             "January" to moonPhaseData.moonPhases.january,
             "February" to moonPhaseData.moonPhases.february,
@@ -65,7 +63,6 @@ fun CalendarScreen(
             "December" to moonPhaseData.moonPhases.december
         )
 
-        // Adding a dark background to the whole screen
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,7 +74,6 @@ fun CalendarScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 itemsIndexed(months) { index, month ->
-                    // Month header styling
                     Text(
                         text = month,
                         color = Color.White,
@@ -103,7 +99,6 @@ fun CalendarScreen(
                                     modifier = Modifier.padding(bottom = 4.dp)
                                 )
 
-                                // Moon phase emoji with larger size and some styling
                                 Text(
                                     text = emoji,
                                     fontSize = 30.sp,

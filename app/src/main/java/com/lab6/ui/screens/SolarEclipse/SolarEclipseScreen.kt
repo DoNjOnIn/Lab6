@@ -64,10 +64,7 @@ fun SolarEclipseScreen(
                     text = "Visibility Regions: ${it.nextSolarEclipse.visibilityRegions}",
                     color = Color.White
                 )
-
                 Spacer(modifier = Modifier.height(64.dp))
-
-
                 Text(
                     text = "Next Lunar Eclipse",
                     color = Color.White,

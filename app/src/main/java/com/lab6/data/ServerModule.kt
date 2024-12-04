@@ -5,6 +5,6 @@ import retrofit2.http.GET
 
 
 interface ServerApi {
-    @GET("b/0WGV")
+    @GET("b/J74S")
     suspend fun getMoonPhase(): MoonPhaseResponse
 }

@@ -31,11 +31,9 @@ fun BaseScreen(
     onSolarEclipse: () -> Unit
 ) {
     val moonPhase by viewModel.moonPhase.collectAsState()
-
     LaunchedEffect(Unit) {
         viewModel.fetchMoonPhase()
     }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -78,10 +76,8 @@ fun BaseScreen(
                 text = "Loading Moon Phase...",
                 color = Color.White
             )
-
             Spacer(modifier = Modifier.height(16.dp))
         }
-
         Button(
             onClick = onCalendar,
             modifier = Modifier
